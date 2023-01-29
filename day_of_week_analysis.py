@@ -1,7 +1,10 @@
 import numpy as np
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-import math
+import pandas as pd
+from IPython.display import set_matplotlib_formats
+
+set_matplotlib_formats('retina', quality=100)
+plt.rcParams['figure.figsize'] = (8, 5)
 
 def relative_costs(contacted, reached, money, day=0, r=0):
     """
@@ -27,34 +30,93 @@ def relative_costs(contacted, reached, money, day=0, r=0):
     """
     
     # calculate the costs/vote
-    difference = np.subtract(contacted, reached)
+
+    difference = reached
     for ind in range(len(difference)):
         difference[ind] = 1.0/float(difference[ind])
     costs = np.multiply(money, difference)
     costs = [costs[ind] for ind in range(len(difference))]
     
-    # normalize costs
-    costs = [round(costs[ind]/sum(costs), 2) for ind in range(len(difference))]
+    # we could normalize costs
+
     if r==0:
         plt.bar(['Mon', 'Tues', 'Wed', 'Thrs', 'Fri', 'Sat', 'Sun'], list(costs))
+        plt.ylabel('Efficiency ($/Vote)')
     elif r==1:
         i=len(costs)-1
         costs = np.array([sum(costs)-costs[i]-costs[i-1], costs[i-1], costs[i]])
-        plt.bar(['Weekday', 'Sat', 'Sun'], list(costs))
+        plt.style.use('seaborn-deep')
+        plt.bar(['Weekday', 'Saturday', 'Sunday'], list(costs), color='darkgreen')
+        plt.xlabel('Day of Week')
+        plt.ylabel('$/Successful Contact')
+        plt.title('Efficiency of Reaching a Contact')
+        plt.show()
+        
     elif r==2:
         i=len(costs)-1
         costs = np.array([sum(costs)-costs[i]-costs[i-1], costs[i-1]+costs[i]])
-        plt.bar(['Weekday', 'Weekend'], list(costs))
+        fig, ax = plt.subplots()
+        
+        bars = ax.bar(
+            x=['Weekday', 'Weekend'],
+            height=list(costs)
+        )
+        
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.spines['bottom'].set_color('#DDDDDD')
+        ax.tick_params(bottom=False, left=False)
+        ax.set_axisbelow(True)
+        ax.yaxis.grid(True, color='#EEEEEE')
+        ax.xaxis.grid(False)
+        
+        bar_color = bars[0].get_facecolor()
+        for bar in bars:
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 2,
+                round(bar.get_height(), 1),
+                horizontalalignment='center',
+                color=bar_color,
+                weight='bold'
+                )
+
+        ax.set_ylabel('Efficiency ($/Vote)', labelpad=15, color='#333333')
+        ax.set_title('Efficiency of Spending Per Day of Week', pad=15, color='#333333',
+             weight='bold')
+        
+        fig.tight_layout()
+        
     return costs
 
-if __name__ == "__main__":
-    con = np.array([5.0,6.0,4.0,5.0,6.0,7.0,8.0])
-    rea = np.array([1,1,2,2,1,4,5])
-    money = np.array([10,12,14,15,9,8,4])
+def make_array(df, contacted, cost = 1):
+    """
     
-    fig = plt.figure(figsize=(10,5))
-    relative_costs(con,rea,money)
-    fig = plt.figure(figsize=(5,5))
-    relative_costs(con,rea,money, r=1)
-    fig = plt.figure(figsize=(4,5))
-    relative_costs(con,rea,money, r=2)
+
+    Parameters
+    ----------
+    df : Any arbitrary data frame.
+    contacted: True/ False
+
+    Returns
+    -------
+    arr : 1xn numpy array (frequency matrix) where each entry is a day of the week.
+
+    """
+    arr = np.zeros(7)
+    for ind, row in df.iterrows():
+        arr[row['Day']] += int(contacted or row['Reached']) * cost
+    return arr
+    
+if __name__ == "__main__":
+    calls = pd.read_pickle('call.pkl')
+    mail = pd.read_pickle('mail.pkl')
+    walk = pd.read_pickle('walk.pkl')
+    text = pd.read_pickle('text.pkl')
+    
+    contacted = make_array(calls, True) + make_array(mail, True) + make_array(walk, True) + make_array(text, True)
+    reached = make_array(calls, False) + make_array(mail, False) + make_array(walk, False) + make_array(text, False)
+    cost = make_array(calls, True, .06) + make_array(mail, True, .35) + make_array(walk, True, 2) + make_array(text, True, .13)
+    
+    relative_costs(contacted, reached, cost, r=1)
