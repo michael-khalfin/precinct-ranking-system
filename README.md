@@ -51,7 +51,7 @@
   <h3 align="left">Gregory Chekler</h3>
 
   <p align="left">
-    Gregory Chekler is a freshman studying Electrical Engineering and Classical Studies at Rice University. He grew up in Concord, Massachusetts and now lives in the Bay Area, California. He is fascinated by embedded systems. When not working, he enjoys working out at the gym, reading books, and getting 8 hours of sleep.<a href="https://www.linkedin.com/in/gregory-chekler-209049260/">LinkedIn</a>.
+    Gregory Chekler is a freshman studying Electrical Engineering and Classical Studies at Rice University. He grew up in Concord, Massachusetts and now lives in the Bay Area, California. He is fascinated by embedded systems. When not working, he enjoys working out at the gym, reading books, and getting 8 hours of sleep. Learn more about Gregory on his <a href="https://www.linkedin.com/in/gregory-chekler-209049260/">LinkedIn</a>.
   </p>
 </div>
 
